@@ -1,3 +1,4 @@
 MNIST
 wandb
 MNIST.tar.gz
+*.log
