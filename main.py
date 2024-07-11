@@ -51,6 +51,7 @@ def test(model, test_loader):
     test_loss = 0
     correct = 0
 
+    example_images = []
     with torch.no_grad():
         for data, target in test_loader:
             data, target = data.to(device), target.to(device)
@@ -60,6 +61,12 @@ def test(model, test_loader):
             # get the index of the max log-probability
             pred = output.max(1, keepdim=True)[1]
             correct += pred.eq(target.view_as(pred)).sum().item()
+            example_images.append(
+                wandb.Image(
+                    data[0],
+                    caption=f"Pred: {pred[0].item()} Truth: {target[0]}",
+                )
+            )
 
     test_loss /= len(test_loader.dataset)
     print(
@@ -67,6 +74,7 @@ def test(model, test_loader):
     )
     wandb.log(
         {
+            "Examples": example_images,
             "Test Accuracy": 100.0 * correct / len(test_loader.dataset),
             "Test Loss": test_loss,
         }
