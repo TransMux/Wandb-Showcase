@@ -6,6 +6,8 @@ import typer
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
+import wandb
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
@@ -63,6 +65,12 @@ def test(model, test_loader):
     print(
         f"Test set: Average loss: {test_loss:.4f}, Accuracy: {correct}/{len(test_loader.dataset)} ({correct / len(test_loader.dataset):.0%})\n"
     )
+    wandb.log(
+        {
+            "Test Accuracy": 100.0 * correct / len(test_loader.dataset),
+            "Test Loss": test_loss,
+        }
+    )
 
 
 def main(
@@ -81,6 +89,8 @@ def main(
     """
     Main function for training and testing the MNIST model.
     """
+    wandb.init(config=locals())
+
     torch.manual_seed(seed)
 
     train_loader = DataLoader(
@@ -114,6 +124,7 @@ def main(
 
     model = Net(dropout, hidden_size).to(device)
     optimizer = optim.SGD(model.parameters(), lr=lr, momentum=momentum)
+    wandb.watch(model)
 
     for epoch in range(1, epochs + 1):
         train(model, train_loader, optimizer, epoch, log_interval)
